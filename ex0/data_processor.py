@@ -17,15 +17,11 @@ class DataProcessor(ABC):
     def ingest(self, data: Any) -> None:
         pass
 
-    def incrementRank(self) -> None:
+    def _store(self, value: str) -> None:
+        self._data_list.append((self._processing_rank, str(value)))
         self._processing_rank += 1
 
-    def getDataList(self) -> list[tuple[int, str]]:
-        return self._data_list
-
     def output(self) -> tuple[int, str]:
-        if len(self._data_list) == 0:
-            return ()
         return self._data_list.pop(0)
 
 
