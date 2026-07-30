@@ -41,19 +41,13 @@ class NumericProcessor(DataProcessor):
             self,
             data: int | float | list[int | float]
     ) -> None:
-        try:
-            if isinstance(data, (int, float)):
-                self._data_list.append((self._processing_rank, (str(data))))
-                self._processing_rank += 1
-            elif isinstance(data, (list)):
-                for x in data:
-                    self._data_list.append((self._processing_rank, (str(x))))
-                    self._processing_rank += 1
-            else:
-                raise ValueError()
-        except Exception:
-            print("Got exception: Improper numeric data")
-        return
+        if not self.validate(data):
+            raise ValueError("Improper numeric data")
+        if isinstance(data, (int, float)):
+            self._store(str(data))
+        else:
+            for item in data:
+                self._store(str(item))
 
 
 class TextProcessor(DataProcessor):
@@ -72,19 +66,13 @@ class TextProcessor(DataProcessor):
             self,
             data: str | list[str]
     ) -> None:
-        try:
-            if isinstance(data, (str)):
-                self._data_list.append((self._processing_rank, data))
-                self._processing_rank += 1
-            elif isinstance(data, (list)):
-                for x in data:
-                    self._data_list.append((self._processing_rank, (str(x))))
-                    self._processing_rank += 1
-            else:
-                raise ValueError()
-        except Exception:
-            print("Got exception: Improper text data")
-        return
+        if not self.validate(data):
+            raise ValueError("Improper text data")
+        if isinstance(data, str):
+            self._store(data)
+        else:
+            for x in data:
+                self._store(x)
 
 
 class LogProcessor(DataProcessor):
@@ -101,7 +89,7 @@ class LogProcessor(DataProcessor):
         else:
             return False
 
-    def validate_dict(self, data: dict) -> bool:
+    def validate_dict(self, data: dict[str, str]) -> bool:
         value_list = data.values()
         if 'log_level' not in data:
             return False
@@ -114,28 +102,17 @@ class LogProcessor(DataProcessor):
 
     def ingest(
             self,
-            data: str | dict[str:str]
+            data: dict[str, str] | list[dict[str, str]]
     ) -> None:
-        try:
-            if isinstance(data, (dict)):
-                tmp = data['log_level']
-                tmp += ': '
-                tmp += data['log_message']
-                self._data_list.append((self._processing_rank, tmp))
-                self._processing_rank += 1
-            elif isinstance(data, (list)):
-                for x in data:
-                    if isinstance(x, (dict)):
-                        tmp = x['log_level']
-                        tmp += ': '
-                        tmp += x['log_message']
-                        self._data_list.append((self._processing_rank, tmp) )
-                        self._processing_rank += 1
-            else:
-                raise ValueError()
-        except Exception:
-            print("Got exception: Improper log data")
-        return
+        if not self.validate(data):
+            raise ValueError("Improper log data")
+        if isinstance(data, dict):
+            text = f"{data['log_level']}: {data['log_message']}"
+            self._store(text)
+        else:
+            for item in data:
+                text = f"{item['log_level']}: {item['log_message']}"
+                self._store(text)
 
 
 def main() -> None:
