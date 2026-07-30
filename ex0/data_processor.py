@@ -58,7 +58,7 @@ class NumericProcessor(DataProcessor):
         except Exception:
             print("Got exception: Improper numeric data")
         return
-    
+
 
 class TextProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
@@ -99,14 +99,13 @@ class LogProcessor(DataProcessor):
             for x in data:
                 if not isinstance(x, (dict)):
                     return False
-                if self.validate_dict(x) == False:
+                if self.validate_dict(x) is False:
                     return False
             return True
         else:
             return False
-    
+
     def validate_dict(self, data: dict) -> bool:
-        key_list = data.keys()
         value_list = data.values()
         if 'log_level' not in data:
             return False
@@ -138,8 +137,8 @@ class LogProcessor(DataProcessor):
                         self._processing_rank += 1
             else:
                 raise ValueError()
-        except Exception as e:
-            print(f"Got exception: Improper log data")
+        except Exception:
+            print("Got exception: Improper log data")
         return
 
 
@@ -207,6 +206,7 @@ def main() -> None:
     print(f"Log entry {element[0]}: {element[1]}", end="\n")
     element = log_processor.output()
     print(f"Log entry {element[0]}: {element[1]}", end="\n")
+
 
 if __name__ == "__main__":
     main()
