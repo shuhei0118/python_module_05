@@ -134,13 +134,15 @@ def main() -> None:
     print(numeric_processor.validate('Hello'))
     print("")
     print("Test invalid ingestion of string 'foo' without prior validation:")
-    numeric_processor.ingest('foo')
+    try:
+        numeric_processor.ingest("foo")  # type: ignore[arg-type]
+    except ValueError as e:
+        print(f"Got exception: {e}")
     print("")
     processing_data = [1, 2, 3, 4, 5]
+    print(f"Processing data: {processing_data}", end="\n\n")
     if numeric_processor.validate(processing_data):
         numeric_processor.ingest(processing_data)
-    data_list = [element[1] for element in numeric_processor.getDataList()]
-    print(f"Processing data: {data_list}", end="\n\n")
     print("Extracting 3 values...", end="\n\n")
     for i in range(0, 3):
         element = numeric_processor.output()
@@ -152,11 +154,16 @@ def main() -> None:
     print("Trying to validate input '42': ", end="")
     print(text_processor.validate(42))
     print("")
+    print("Test invalid ingestion of integer 42 without prior validation:")
+    try:
+        text_processor.ingest(42)  # type: ignore[arg-type]
+    except ValueError as e:
+        print(f"Got exception: {e}")
+    print("")
     processing_data = ['Hello', 'Nexus', 'World']
+    print(f"Processing data: {processing_data}", end="\n\n")
     if text_processor.validate(processing_data):
         text_processor.ingest(processing_data)
-    data_list = [element[1] for element in text_processor.getDataList()]
-    print(f"Processing data: {data_list}", end="\n\n")
     print("Extracting 1 values...", end="\n\n")
     element = text_processor.output()
     print(f"Text value {element[0]}: {element[1]}", end="\n")
@@ -166,6 +173,12 @@ def main() -> None:
     log_processor = LogProcessor()
     print("Trying to validate input 'Hello': ", end="")
     print(log_processor.validate('Hello'))
+    print("")
+    print("Test invalid ingestion of string 'Hello' without prior validation:")
+    try:
+        log_processor.ingest("Hello")  # type: ignore[arg-type]
+    except ValueError as e:
+        print(f"Got exception: {e}")
     print("")
     processing_data = [
         {'log_level': 'NOTICE', 'log_message': 'Connection to server'},
