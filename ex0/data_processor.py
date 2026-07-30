@@ -29,11 +29,8 @@ class NumericProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
         if isinstance(data, (int, float)):
             return True
-        elif isinstance(data, (list)):
-            for x in data:
-                if not isinstance(x, (int, float)):
-                    return False
-            return True
+        elif isinstance(data, list):
+            return all(isinstance(x, (int, float)) for x in data)
         else:
             return False
 
@@ -52,13 +49,10 @@ class NumericProcessor(DataProcessor):
 
 class TextProcessor(DataProcessor):
     def validate(self, data: Any) -> bool:
-        if isinstance(data, (str)):
+        if isinstance(data, str):
             return True
-        elif isinstance(data, (list)):
-            for x in data:
-                if not isinstance(x, str):
-                    return False
-            return True
+        elif isinstance(data, list):
+            return all(isinstance(x, str) for x in data)
         else:
             return False
 
@@ -76,29 +70,24 @@ class TextProcessor(DataProcessor):
 
 
 class LogProcessor(DataProcessor):
+    def _validate_dict(self, data: dict[Any, Any]) -> bool:
+        if set(data.keys()) != {"log_level", "log_message"}:
+            return False
+        return (
+            isinstance(data["log_level"], str)
+            and isinstance(data["log_message"], str)
+        )
+
     def validate(self, data: Any) -> bool:
-        if isinstance(data, (dict)):
-            return self.validate_dict(data)
-        elif isinstance(data, (list)):
-            for x in data:
-                if not isinstance(x, (dict)):
-                    return False
-                if self.validate_dict(x) is False:
-                    return False
-            return True
+        if isinstance(data, dict):
+            return self._validate_dict(data)
+        elif isinstance(data, list):
+            return all(
+                isinstance(x, dict) and self._validate_dict(x)
+                for x in data
+            )
         else:
             return False
-
-    def validate_dict(self, data: dict[str, str]) -> bool:
-        value_list = data.values()
-        if 'log_level' not in data:
-            return False
-        if 'log_message' not in data:
-            return False
-        for x in value_list:
-            if not isinstance(x, str):
-                return False
-        return True
 
     def ingest(
             self,
@@ -139,10 +128,10 @@ def main() -> None:
     except ValueError as e:
         print(f"Got exception: {e}")
     print("")
-    processing_data = [1, 2, 3, 4, 5]
-    print(f"Processing data: {processing_data}", end="\n\n")
-    if numeric_processor.validate(processing_data):
-        numeric_processor.ingest(processing_data)
+    numeric_data: list[int | float] = [1, 2, 3, 4, 5]
+    print(f"Processing data: {numeric_data}", end="\n\n")
+    if numeric_processor.validate(numeric_data):
+        numeric_processor.ingest(numeric_data)
     print("Extracting 3 values...", end="\n\n")
     for i in range(0, 3):
         element = numeric_processor.output()
@@ -160,10 +149,10 @@ def main() -> None:
     except ValueError as e:
         print(f"Got exception: {e}")
     print("")
-    processing_data = ['Hello', 'Nexus', 'World']
-    print(f"Processing data: {processing_data}", end="\n\n")
-    if text_processor.validate(processing_data):
-        text_processor.ingest(processing_data)
+    text_data = ['Hello', 'Nexus', 'World']
+    print(f"Processing data: {text_data}", end="\n\n")
+    if text_processor.validate(text_data):
+        text_processor.ingest(text_data)
     print("Extracting 1 values...", end="\n\n")
     element = text_processor.output()
     print(f"Text value {element[0]}: {element[1]}", end="\n")
@@ -180,13 +169,13 @@ def main() -> None:
     except ValueError as e:
         print(f"Got exception: {e}")
     print("")
-    processing_data = [
+    log_data = [
         {'log_level': 'NOTICE', 'log_message': 'Connection to server'},
         {'log_level': 'ERROR', 'log_message': 'Unauthorized access!!'}
     ]
-    print(f"Processing data: {processing_data}", end="\n\n")
-    if log_processor.validate(processing_data):
-        log_processor.ingest(processing_data)
+    print(f"Processing data: {log_data}", end="\n\n")
+    if log_processor.validate(log_data):
+        log_processor.ingest(log_data)
     print("Extracting 2 values...", end="\n\n")
     element = log_processor.output()
     print(f"Log entry {element[0]}: {element[1]}", end="\n")
